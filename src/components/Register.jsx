@@ -11,7 +11,7 @@ import {
 } from "firebase/auth";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import app from "../firebase/firebase.config";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 const auth = getAuth(app);
@@ -80,6 +80,7 @@ const Register = () => {
   };
 
   // Email Password register authentication
+  const navigate = useNavigate();
   const handleOnSubmitData = (event) => {
     event.preventDefault();
     const eventTarget = event.target;
@@ -109,24 +110,22 @@ const Register = () => {
       }
     }
 
+    // Check terms and condition
+    if (!isTermsChecked) {
+      setError("*Please agree to the terms and conditions!");
+      return;
+    }
+
     // Register New User In Firebase
     createUserWithEmailAndPassword(auth, email, password)
       .then((result) => {
-        if (!isTermsChecked) {
-          setError("*Please agree to the terms and conditions!");
-          return;
-        } else {
-          updateProfileInfo(result.user, name);
-          sendVerification(result.user);
-          console.log(result.user);
-        }
+        updateProfileInfo(result.user, name);
+        sendVerification(result.user);
+        navigate("/");
+        console.log(result.user);
       })
       .catch((error) => {
         if (error.message == "Firebase: Error (auth/email-already-in-use).") {
-          if (!isTermsChecked) {
-            setError("*Please agree to the terms and conditions!");
-            return;
-          }
           setError("Your email already exists!");
           event.target.reset();
         }
@@ -134,7 +133,6 @@ const Register = () => {
       });
     // Update User Name
     const updateProfileInfo = (user, name) => {
-      <Link to={"/"}></Link>;
       updateProfile(user, {
         displayName: name,
       })
